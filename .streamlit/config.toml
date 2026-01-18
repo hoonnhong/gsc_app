@@ -1,0 +1,7 @@
+[theme]
+# Primary color equivalent to generic blue/green for now, user can customize later
+primaryColor = "#F63366"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"

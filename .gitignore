@@ -1,0 +1,15 @@
+# Environment
+venv/
+__pycache__/
+
+# Data
+data/database.db
+*.db
+*.sqlite
+
+# Secrets
+.streamlit/secrets.toml
+
+# OS
+.DS_Store
+Thumbs.db
