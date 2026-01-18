@@ -26,14 +26,13 @@ def main():
 
     # --- Routing (지연 로딩 적용: 성능 최적화) ---
     if selected == "업무자동화":
-        from views import automation
+        from views_admin import automation
         automation.show()
 
     elif selected == "조합원관리":
         # 서브 메뉴 (Optional: 조합원 관리 내부에서 탭이나 사이드바 사용 가능)
-        # 지금은 간단히 member_list를 기본으로 보여줌
-        from views.members import member_list
-        member_list.show()
+        from views_admin import member_manage
+        member_manage.show()
 
     elif selected == "설정":
         st.info("🚧 환경 설정 기능 준비 중")
