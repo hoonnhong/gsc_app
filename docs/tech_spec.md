@@ -56,12 +56,14 @@ coop_ims/
 ├── services/                # [비즈니스 로직]
 │   ├── __init__.py
 │   ├── admin_service.py     # 관리자용 로직 (승인, 통계 발행 등)
+│   ├── migration_service.py # [NEW] 데이터 마이그레이션 (Excel -> DB)
 │   └── public_service.py    # 사용자용 로직 (신청 등)
 │
 ├── views_admin/             # [🅰️ 직원용 화면 소스]
 │   ├── __init__.py
 │   ├── automation.py        # 업무 자동화
 │   ├── member_manage.py     # 조합원 관리
+│   ├── data_management.py   # [NEW] 데이터 관리 (업로드/변환)
 │   └── dashboard.py         # 대시보드
 │
 ├── views_public/            # [🅱️ 조합원용 화면 소스]
@@ -118,8 +120,9 @@ def main():
     with st.container():
         selected = option_menu(
             menu_title=None,
-            options=["업무자동화", "조합원관리", "설정"],
-            icons=["robot", "people", "gear"],
+            menu_title=None,
+            options=["업무자동화", "조합원관리", "데이터관리", "설정"],
+            icons=["robot", "people", "database", "gear"],
             default_index=0,
             orientation="horizontal"
         )
@@ -132,6 +135,10 @@ def main():
     elif selected == "조합원관리":
         from views.members import member_list
         member_list.show()
+
+    elif selected == "데이터관리":
+        from views_admin import data_management
+        data_management.show()
 
     elif selected == "설정":
         st.info("🚧 환경 설정 기능 준비 중")
