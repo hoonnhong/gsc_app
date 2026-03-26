@@ -47,5 +47,10 @@
     "id": "dev",
     "label": "개발 관리",
     "icon": "construction"
+  },
+  {
+    "id": "notice",
+    "label": "Notice",
+    "icon": "notifications"
   }
 ]

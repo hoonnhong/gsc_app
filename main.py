@@ -89,30 +89,48 @@ def build_ui():
         state.current_menu = menu_name
         content_area.clear()
         
+        # 메인 콘텐츠 영역 (스크롤 가능)
         with content_area:
-            if menu_name == 'dashboard':
-                render_dashboard()
-            elif menu_name == 'accounting':
-                render_accounting_page()
-            elif menu_name == 'instructor':
-                render_instructor_page()
-            elif menu_name == 'settings':
-                render_settings_page()
-            elif menu_name == 'dev':
-                render_dev_page()
-            else:
-                ui.label(f'"{menu_name}" 페이지는 준비 중입니다.').classes('text-xl text-gray-400')
+            with ui.column().classes('flex-grow p-8 bg-gray-50 overflow-auto'):
+                # --- 동적 라우팅 (Dynamic Routing) 적용 ---
+                import importlib
+                try:
+                    # 규칙: modules/{menu_name}/{menu_name}_page.py 모듈을 로드
+                    module_path = f'modules.{menu_name}.{menu_name}_page'
+                    module = importlib.import_module(module_path)
+                    
+                    # 렌더링 함수 호출 시도 (1순위: render_page, 2순위: render_{menu_name}_page)
+                    if hasattr(module, 'render_page'):
+                        module.render_page()
+                    elif hasattr(module, f'render_{menu_name}_page'):
+                        func = getattr(module, f'render_{menu_name}_page')
+                        func()
+                    else:
+                        with ui.column().classes('w-full mt-20 items-center'):
+                            ui.icon('warning', size='64px', color='orange')
+                            ui.label(f'"{menu_name}" 모듈에 실행 함수가 정의되지 않았습니다.').classes('text-xl mt-4')
+                            ui.code(f'def render_page(): ... 를 추가해 주세요.')
+                
+                except ImportError as e:
+                    # 모듈 파일이 없는 경우 안내 메시지
+                    with ui.column().classes('w-full mt-20 items-center'):
+                        ui.icon('construction', size='80px', color='gray')
+                        ui.label(f'[{menu_name}] 기능이 아직 준비되지 않았습니다.').classes('text-2xl font-bold text-gray-400 mt-4')
+                        ui.label(f'경로: modules/{menu_name}/{menu_name}_page.py').classes('text-gray-300')
+                        if menu_name == 'settings':
+                             # 설정 페이지는 예외적으로 직접 호출 (혹은 미리 생성 되어 있어야 함)
+                             from modules.settings.settings_page import render_settings_page
+                             render_settings_page()
+                except Exception as e:
+                    ui.label(f'페이지 로딩 중 오류 발생: {str(e)}').classes('text-red-600')
+                else:
+                    # This else block is for the try-except. It executes if try block completes without exception.
+                    # If the module was loaded but no render function was found, the warning above would have been displayed.
+                    # This specific else block might be redundant if the above logic covers all cases,
+                    # but keeping it as per instruction for now.
+                    ui.label(f'"{menu_name}" 페이지는 준비 중입니다.').classes('text-xl text-gray-400')
 
-    def render_dashboard():
-        """기본 대시보드 화면"""
-        ui.markdown('### 👋 안녕하세요, 대표님!').classes('mb-6 text-xl') # 텍스트 크기 확대
-        with ui.row().classes('w-full gap-6'):
-            with ui.card().classes('w-80 p-6 border-l-8 border-primary'): # 카드 크기 및 테두리 확대
-                ui.label('오늘의 일정').classes('text-lg font-bold text-gray-500')
-                ui.label('0건').classes('text-4xl font-black text-primary')
-            with ui.card().classes('w-80 p-6 border-l-8 border-blue-500'):
-                ui.label('미결재').classes('text-lg font-bold text-gray-500')
-                ui.label('3건').classes('text-4xl font-black text-blue-600')
+    # (기존 하드코딩된 render_ 함수들은 삭제하고 개별 모듈 파일로 이동함)
 
     # 최초 실행 시 대시보드 표시
     switch_page('dashboard')
