@@ -62,7 +62,14 @@ def render_menu_editor():
                     process_items(item['children'])
         
         process_items(data)
-        ui.notify('모든 설정과 모듈 파일이 업데이트되었습니다. 다시 로트 하세요.', type='positive')
+        
+        # 메인 사이드바 실시간 갱신 (새로고침 없이)
+        try:
+            from main import refresh_app_sidebar
+            refresh_app_sidebar()
+            ui.notify('모든 설정과 모듈 파일이 저장되었습니다.', type='positive')
+        except Exception as e:
+            ui.notify('설정은 저장되었으나 사이드바 갱신 중 오류가 발생했습니다.', type='warning')
 
     state = {'menu': load_menu()}
     editor_container = ui.column().classes('w-full gap-4')

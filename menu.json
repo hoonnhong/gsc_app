@@ -2,7 +2,7 @@
   {
     "id": "dashboard",
     "label": "대시보드",
-    "icon": "dashboard"
+    "icon": "home"
   },
   {
     "id": "accounting_group",
@@ -54,19 +54,19 @@
     "icon": "notifications"
   },
   {
-    "id": "",
+    "id": "favorite_sites",
     "label": "즐겨찾는 사이트",
-    "icon": "star",
+    "icon": "bookmarks",
     "children": [
       {
-        "id": "",
+        "id": "work",
         "label": "업무",
-        "icon": "arrow_right"
+        "icon": "work"
       },
       {
-        "id": "",
+        "id": "others",
         "label": "기타",
-        "icon": "arrow_right"
+        "icon": "more_horiz"
       }
     ]
   }
