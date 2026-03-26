@@ -52,5 +52,22 @@
     "id": "notice",
     "label": "Notice",
     "icon": "notifications"
+  },
+  {
+    "id": "",
+    "label": "즐겨찾는 사이트",
+    "icon": "star",
+    "children": [
+      {
+        "id": "",
+        "label": "업무",
+        "icon": "arrow_right"
+      },
+      {
+        "id": "",
+        "label": "기타",
+        "icon": "arrow_right"
+      }
+    ]
   }
 ]
