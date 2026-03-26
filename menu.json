@@ -1,0 +1,51 @@
+[
+  {
+    "id": "dashboard",
+    "label": "대시보드",
+    "icon": "dashboard"
+  },
+  {
+    "id": "accounting_group",
+    "label": "회계 관리",
+    "icon": "account_balance",
+    "children": [
+      {
+        "id": "accounting",
+        "label": "회계 메인",
+        "icon": "analytics"
+      },
+      {
+        "id": "expense",
+        "label": "지출 결의",
+        "icon": "description"
+      }
+    ]
+  },
+  {
+    "id": "instructor_group",
+    "label": "강사 관리",
+    "icon": "people",
+    "children": [
+      {
+        "id": "instructor",
+        "label": "강사 목록",
+        "icon": "group"
+      },
+      {
+        "id": "payment",
+        "label": "지급 확인",
+        "icon": "receipt_long"
+      }
+    ]
+  },
+  {
+    "id": "settings",
+    "label": "설정",
+    "icon": "settings"
+  },
+  {
+    "id": "dev",
+    "label": "개발 관리",
+    "icon": "construction"
+  }
+]

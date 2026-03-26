@@ -1,0 +1,8 @@
+# .gitignore - Git 관리에서 제외할 파일 설정
+venv/
+__pycache__/
+*.pyc
+.env
+secrets/
+*.log
+.DS_Store
