@@ -21,7 +21,36 @@ def render_settings_page():
         with ui.tab_panel(menu_tab):
             render_menu_editor()
         with ui.tab_panel(general_tab):
-            ui.label('GSC 통합 업무 관리 시스템 v1.5').classes('text-gray-500')
+            with ui.column().classes('w-full gap-6 p-4 bg-white shadow rounded-lg'):
+                ui.label('🖥️ 화면 표시 설정').classes('text-xl font-bold')
+                
+                from nicegui import app
+                
+                # 현재 폰트 크기 가져오기 (기본값 20)
+                try:
+                    current_size = app.storage.user.get('font_size', 20)
+                except RuntimeError:
+                    current_size = 20
+
+                ui.label(f'현재 전체 폰트 크기: {current_size}px').classes('text-lg')
+                
+                def update_font_size(val):
+                    try:
+                        app.storage.user['font_size'] = int(val)
+                        ui.notify(f'폰트 크기가 {int(val)}px로 설정되었습니다. 모든 화면에 적용됩니다.', type='positive')
+                        # 페이지를 새로고침하여 전역 스타일 반영
+                        ui.run_javascript('window.location.reload()')
+                    except Exception as e:
+                        ui.notify(f'설정 저장 중 오류 발생: {e}', type='negative')
+
+                with ui.row().classes('w-full items-center gap-4'):
+                    ui.label('글자 크기 조절').classes('text-gray-600')
+                    slider = ui.slider(min=12, max=30, value=current_size).classes('flex-1')
+                    ui.label().bind_text_from(slider, 'value', backward=lambda v: f'{int(v)} px')
+                    ui.button('적용하기', on_click=lambda: update_font_size(slider.value)).classes('bg-primary text-white')
+
+                ui.markdown('---')
+                ui.label('GSC 통합 업무 관리 시스템 v1.5').classes('text-gray-500')
 
 def render_menu_editor():
     """AI 연동 메뉴 편집기를 렌더링합니다."""

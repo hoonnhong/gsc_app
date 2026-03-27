@@ -1,0 +1,322 @@
+<!-- 지출품의서 A4 출력용 HTML 템플릿입니다. Jinja2 엔진을 통해 데이터를 주입합니다. -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>지출품의서</title>
+    <style>
+        /* 웹 폰트 및 기본 리셋 */
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+            color: #000;
+        }
+
+        /* A4 용지 규격 및 Flexbox 설정 */
+        .page-a4 {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 10mm auto;
+            padding: 20mm;
+            background: #fff;
+            box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 테이블 공통 스타일 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            word-break: keep-all;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 10pt;
+        }
+        th {
+            background-color: #d9d9d9;
+            font-weight: bold;
+        }
+
+        /* 상단 헤더 영역 (제목 + 결재란) */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            height: 27.10mm;
+            flex-shrink: 0; /* 높이 고정 */
+        }
+        .title-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28pt;
+            font-weight: bold;
+            letter-spacing: 0.2em;
+        }
+        .approval-box {
+            width: 86mm;
+            height: 100%;
+        }
+        .approval-table {
+            height: 100%;
+        }
+        .approval-table th {
+            font-size: 10pt;
+        }
+        .sign-header {
+            width: 13.19mm;
+            line-height: 1.5;
+        }
+        .sign-cell {
+            height: 20.58mm;
+        }
+
+        /* 중간 메인 콘텐츠 (Flex 공간 분배) */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        /* 메타 정보 테이블 */
+        .meta-table {
+            flex-shrink: 0; /* 높이 고정 */
+        }
+        .meta-table th {
+            width: 22.43mm;
+        }
+        
+        /* 유틸리티 클래스 */
+        .text-left { text-align: left; padding-left: 10px; }
+        .text-right { text-align: right; padding-right: 10px; }
+        .font-bold { font-weight: bold; }
+
+        /* 지출 내역 테이블 영역 (고정) */
+        .items-section {
+            flex-shrink: 0; /* 높이 고정 */
+            display: flex;
+            flex-direction: column;
+            margin-top: 15px;
+        }
+        .items-table {
+            height: 100%;
+        }
+        .items-table th:nth-child(1) { width: 14.19mm; } /* 순번 */
+        .items-table th:nth-child(2) { width: auto; }    /* 적요 */
+        .items-table th:nth-child(3) { width: 20.38mm; } /* 일자 */
+        .items-table th:nth-child(4) { width: 25.00mm; } /* 금액 */
+        .items-table th:nth-child(5) { width: 21.16mm; } /* 지급방법 */
+        .items-table th:nth-child(6) { width: 23.81mm; } /* 비고 */
+
+        /* 비고 테이블 영역 (유동 확장 및 강제 높이 점유) */
+        .note-section {
+            flex: 1; /* 남은 수직 공간 전체 점유 */
+            display: flex;
+            flex-direction: column;
+            margin-top: 15px;
+            min-height: 0; /* Flexbox 버그 방지 */
+        }
+        .note-table {
+            flex: 1; /* 테이블 자체가 부모 높이를 채우도록 */
+            height: 100%;
+        }
+        .note-table tr:last-child {
+            height: 100%; /* 마지막 행이 남은 공간을 모두 차지하여 테두리를 하단까지 연장 */
+        }
+        .note-table th {
+            height: 7.52mm;
+            flex-shrink: 0;
+        }
+        .note-content-cell {
+            text-align: left;
+            vertical-align: top;
+            padding: 15px !important; /* 강제 적용 */
+        }
+
+        /* 하단 푸터 영역 */
+        .footer-section {
+            margin-top: 20px; /* 푸터 위치 미세 조정 */
+            flex-shrink: 0;   /* 높이 고정 */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .footer-text {
+            font-size: 10pt;
+            margin-bottom: 10px;
+        }
+        .footer-date {
+            font-size: 11pt;
+            margin-bottom: 15px;
+        }
+        .footer-sign {
+            width: 100%;
+            text-align: right;
+            font-size: 10pt;
+            padding-right: 20px;
+            box-sizing: border-box;
+            margin-bottom: 25px;
+        }
+        .company-name {
+            font-size: 20pt;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        /* 인쇄 최적화 설정 */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        @media print {
+            body {
+                background-color: transparent;
+            }
+            .page-a4 {
+                margin: 0;
+                padding: 20mm;
+                box-shadow: none;
+                width: 210mm;
+                height: 297mm;
+            }
+            /* 프린트 시 표 헤더 배경색 보존 */
+            th {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background-color: #d9d9d9 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-a4">
+        
+        <!-- 상단 헤더: 제목 및 결재란 -->
+        <div class="header-section">
+            <div class="title-box">지 출 품 의 서</div>
+            <div class="approval-box">
+                <table class="approval-table">
+                    <tr>
+                        <th rowspan="2" class="sign-header">결<br><br>재</th>
+                        <th>담당</th>
+                        <th>경영이사</th>
+                        <th>이사장</th>
+                    </tr>
+                    <tr>
+                        <td class="sign-cell">{{ 결재_담당 }}</td>
+                        <td class="sign-cell">{{ 결재_경영이사 }}</td>
+                        <td class="sign-cell">{{ 결재_이사장 }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 메인 컨텐츠 영역 -->
+        <div class="main-content">
+            
+            <!-- 문서 기본 정보 (메타 데이터) -->
+            <table class="meta-table">
+                <tr>
+                    <th>품의제목</th>
+                    <td colspan="5" class="text-left">{{ 품의제목 }}</td>
+                </tr>
+                <tr>
+                    <th>결제일자</th>
+                    <td>{{ 결제일자 }}</td>
+                    <th style="width: 28.32mm;">기안자</th>
+                    <td>{{ 기안자 }}</td>
+                    <th style="width: 28.32mm;">직급</th>
+                    <td>{{ 기안자_직급 }}</td>
+                </tr>
+                <tr>
+                    <th>금액</th>
+                    <td colspan="5" class="text-left font-bold">{{ 품의총금액 }}</td>
+                </tr>
+            </table>
+
+            <!-- 지출 내역 (Flex로 세로 꽉 차게 비율 분배됨) -->
+            <div class="items-section">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>순번</th>
+                            <th>적요</th>
+                            <th>일자</th>
+                            <th>&nbsp;금액&nbsp;</th>
+                            <th>지급방법&nbsp;</th>
+                            <th>&nbsp;비고&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 데이터 주입용 변수 (원본 표 7줄 구조 완벽 재현) -->
+                        {% for item in items %}
+                        <tr>
+                            <td>{{ item.seq }}</td>
+                            <td class="text-left">{{ item.summary }}</td>
+                            <td>{{ item.date }}</td>
+                            <td class="text-right">{{ item.amount }}</td>
+                            <td>{{ item.method }}</td>
+                            <td>{{ item.note }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% for i in range(items|length, 7) %}
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <th colspan="3">합 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;계</th>
+                            <td class="text-right font-bold">{{ 합계금액 }}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 비고 영역 -->
+            <div class="note-section">
+                <table class="note-table">
+                    <tr>
+                        <th>비 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;고</th>
+                    </tr>
+                    <tr>
+                        <td class="note-content-cell">{{ 문서비고 }}</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- 하단 정보 영역 -->
+        <div class="footer-section">
+            <div class="footer-text">　상기 금액을 청구하오니 검토 후 재가하여 주시길 바랍니다.</div>
+            <div class="footer-date">{{ 작성년도 }}년 {{ 작성월 }}월 {{ 작성일 }}일</div>
+            <div class="footer-sign">신 청 인 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ 신청인 }} &nbsp;&nbsp;&nbsp;&nbsp;(인)</div>
+            <div class="company-name">경남산청의료복지사회적협동조합</div>
+        </div>
+
+    </div>
+</body>
+</html>

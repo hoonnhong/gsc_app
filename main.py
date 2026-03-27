@@ -8,14 +8,13 @@ import os
 from nicegui import ui
 from config import Config
 
-# 🛠️ 각 모듈의 페이지 렌더링 함수를 Import 합니다.
-from modules.accounting.accounting_page import render_accounting_page
-from modules.instructor.instructor_page import render_instructor_page
+# 🛠️ 각 모듈의 페이지 렌더링 함수를 명시적으로 Import 합니다.
+from modules.accounting_group.accounting.accounting_page import render_accounting_page
+from modules.accounting_group.expense.expense_page import render_expense_page
+from modules.instructor_group.instructor.instructor_page import render_instructor_page
 from modules.settings.settings_page import render_settings_page
 from modules.dev.dev_page import render_dev_page
-
-# 초기 설정 확인
-Config.validate()
+from modules.dashboard.dashboard_page import render_page as render_dashboard_page
 
 # --- 메뉴 데이터 로딩 ---
 def load_menu_data():
@@ -30,7 +29,6 @@ def load_menu_data():
     return []
 
 # --- 상태 관리 (현재 어떤 메뉴를 보고 있는지) ---
-# app.storage.user에 저장하여 새로고침 후에도 유지되도록 합니다.
 from nicegui import app
 
 # --- 인터페이스 구성 ---
@@ -51,13 +49,12 @@ def render_sidebar():
                     for child in item['children']:
                         create_menu_item(child, depth + 1)
             else:
-                # 현재 선택된 메뉴인지 확인
                 try:
                     current = app.storage.user.get('current_menu', 'dashboard')
                 except RuntimeError:
                     current = 'dashboard'
                 is_active = current == item['id']
-                ui.button(item['label'], icon=item['icon'], on_click=lambda: switch_page(item['id'])) \
+                ui.button(item['label'], icon=item['icon'], on_click=lambda id=item['id']: switch_page(id)) \
                     .classes(f'{classes} {"text-md" if depth > 0 else "text-lg"}') \
                     .props(f'flat icon-size="28px" {"outline" if is_active else ""}')
 
@@ -68,28 +65,26 @@ def render_sidebar():
 def render_content(menu_name):
     """메인 콘텐츠 영역을 렌더링합니다."""
     with ui.column().classes('flex-grow p-8 bg-gray-50 overflow-auto w-full'):
-        import importlib
-        try:
-            module_path = f'modules.{menu_name}.{menu_name}_page'
-            module = importlib.import_module(module_path)
-            
-            if hasattr(module, 'render_page'):
-                module.render_page()
-            elif hasattr(module, f'render_{menu_name}_page'):
-                getattr(module, f'render_{menu_name}_page')()
-            else:
-                with ui.column().classes('w-full mt-20 items-center'):
-                    ui.icon('warning', size='64px', color='orange')
-                    ui.label(f'"{menu_name}" 모듈 실행 함수 없음').classes('text-xl mt-4')
-        except ImportError:
+        # 정적 매핑을 통해 안정성 확보
+        menu_handlers = {
+            'dashboard': render_dashboard_page,
+            'accounting': render_accounting_page,
+            'expense': render_expense_page,
+            'instructor': render_instructor_page,
+            'settings': render_settings_page,
+            'dev': render_dev_page
+        }
+        
+        handler = menu_handlers.get(menu_name)
+        if handler:
+            try:
+                handler()
+            except Exception as e:
+                ui.label(f'페이지 렌더링 오류: {e}').classes('text-red-500')
+        else:
             with ui.column().classes('w-full mt-20 items-center text-gray-400'):
                 ui.icon('construction', size='80px')
-                ui.label(f'[{menu_name}] 기능 개발 중입니다.').classes('text-2xl font-bold mt-4')
-                if menu_name == 'settings':
-                    from modules.settings.settings_page import render_settings_page
-                    render_settings_page()
-        except Exception as e:
-            ui.label(f'오류 발생: {str(e)}').classes('text-red-600')
+                ui.label(f'[{menu_name}] 기능 개발 중입니다.').classes('text-xl font-bold mt-4')
 
 def switch_page(menu_name):
     """페이지를 전환합니다."""
@@ -101,7 +96,49 @@ def switch_page(menu_name):
     render_content.refresh(menu_name)
 
 def build_ui():
-    ui.add_head_html('<style>body { font-size: 18px; }</style>')
+    # 저장된 폰트 크기 가져오기 (기본값 20px)
+    try:
+        font_size = app.storage.user.get('font_size', 20)
+    except RuntimeError:
+        font_size = 20
+    
+    # 더 강력하고 구체적인 CSS 주입
+    ui.add_head_html(f'''
+        <style>
+            /* 전체 전역 설정 */
+            html, body {{ font-size: {font_size}px !important; }}
+            
+            /* 모든 입력창, 버튼, 리스트 아이템 강제 적용 */
+            .q-field, .q-btn, .q-item, .q-tab, .q-table, .q-expansion-item {{
+                font-size: {font_size}px !important;
+            }}
+            
+            /* 입력창 내부 상세 요소 (레이블, 입력값, 접두어 등) */
+            .q-field__native, .q-field__input, .q-field__label, 
+            .q-field__prefix, .q-field__suffix, .q-field__messages {{
+                font-size: {font_size}px !important;
+                line-height: 1.5 !important;
+            }}
+            
+            /* 입력창 높이 자동 조절 및 여백 확보 */
+            .q-field__control {{
+                height: auto !important;
+                min-height: 2.2em !important;
+                padding-top: 4px !important;
+                padding-bottom: 4px !important;
+            }}
+            
+            /* 버튼 내부 텍스트 */
+            .q-btn__content {{
+                font-size: {font_size}px !important;
+            }}
+
+            /* 사이드바 메뉴 텍스트 */
+            .q-item__section--main {{
+                font-size: {font_size}px !important;
+            }}
+        </style>
+    ''')
     ui.colors(primary='#385E3C', secondary='#F1F8E9', accent='#111B1C')
     
     with ui.header().classes('items-center justify-between bg-primary text-white p-4'):
@@ -109,7 +146,8 @@ def build_ui():
             ui.button(icon='menu', on_click=lambda: left_drawer.toggle()).props('flat').classes('text-white')
             ui.label('GSC 통합 업무 관리 시스템').classes('text-3xl font-bold')
     
-    with ui.left_drawer(value=True).classes('bg-slate-50 border-r shadow-sm') as left_drawer:
+    # 사이드바 너비를 350px로 더 여유롭게 확장
+    with ui.left_drawer(value=True).classes('bg-slate-50 border-r shadow-sm').props('width=350') as left_drawer:
         render_sidebar()
 
     # 콘텐츠 영역
@@ -131,4 +169,5 @@ def index():
 
 if __name__ in {"__main__", "__mp_main__"}:
     # 상태 유지를 위해 storage_secret 설정
-    ui.run(title='GSC App', port=8080, language='ko-KR', storage_secret='gsc_secret_key_123')
+    # reconnect_timeout을 늘려 handshake failed 오류 방지 시도
+    ui.run(title='GSC App', port=8080, language='ko-KR', storage_secret='gsc_secret_key_123', reconnect_timeout=10)
