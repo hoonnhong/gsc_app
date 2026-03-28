@@ -15,17 +15,17 @@
             background-color: #f0f0f0;
             font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
             color: #000;
+            overflow: hidden; /* 스크롤바 제거 */
         }
 
         /* A4 용지 규격 및 Flexbox 설정 */
         .page-a4 {
             width: 210mm;
-            min-height: 297mm;
-            margin: 10mm auto;
+            height: 297mm; /* min-height 대신 height 고정 */
+            margin: 0 auto; /* 상하 여백 제거 */
             padding: 20mm;
             background: #fff;
             box-sizing: border-box;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
         }
